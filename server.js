@@ -46,8 +46,11 @@ io.on("connection", (socket) => {
         putTurn(pos, newTurn);
         const { isWin, comb, winner } = checkWinComb();
         console.log("Winner ", winner, "winning combination, ", comb);
+        const isDraw = checkDraw();
         if (!isWin) {
-          changeTurn();
+          if (isDraw) {
+            io.emit("set_draw", true);
+          } else changeTurn();
         } else {
           io.emit("set_winner", { isWin, comb, winner_turn: winner });
         }
@@ -110,6 +113,16 @@ const checkWinComb = () => {
   var win = isWin ? turn : -1;
 
   return { isWin, comb, winner: win };
+};
+
+const checkDraw = () => {
+  var ans = true;
+  game_state.forEach((ele) => {
+    if (ele === -1) {
+      ans = false;
+    }
+  });
+  return ans;
 };
 
 const showUsers = () => {
