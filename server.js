@@ -8,6 +8,16 @@ var turn = 0;
 var isDraw = false;
 const initial_game_state = [-1, -1, -1, -1, -1, -1, -1, -1, -1];
 var game_state = [...initial_game_state];
+const winning_positions = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
+];
 
 const io = new Server(httpServer, {
   cors: { origin: "*", methods: ["GET", "POST"] },
@@ -34,6 +44,13 @@ io.on("connection", (socket) => {
     socket.on("put_turn", (pos, newTurn) => {
       if (turn === newTurn) {
         putTurn(pos, newTurn);
+        const { isWin, comb, winner } = checkWinComb();
+        console.log("Winner ", winner, "winning combination, ", comb);
+        if (!isWin) {
+          changeTurn();
+        } else {
+          io.emit("set_winner", { isWin, comb, winner_turn: winner });
+        }
       } else {
         console.log("wrongTurn");
       }
@@ -61,12 +78,38 @@ io.on("connection", (socket) => {
 });
 
 const putTurn = (pos, newTurn) => {
-  game_state[pos] = newTurn;
+  if (game_state[pos] === -1) {
+    game_state[pos] = newTurn;
+  }
+};
+
+const changeTurn = () => {
   if (turn === 0) {
     turn = 1;
   } else if (turn === 1) {
     turn = 0;
   }
+};
+
+const checkWinComb = () => {
+  var check = turn;
+  var comb = [];
+  var isWin = false;
+  winning_positions.forEach((element) => {
+    var ans = true;
+    element.forEach((pos) => {
+      if (check !== game_state[pos]) {
+        ans = false;
+      }
+    });
+    if (ans) {
+      comb = element;
+      isWin = true;
+    }
+  });
+  var win = isWin ? turn : -1;
+
+  return { isWin, comb, winner: win };
 };
 
 const showUsers = () => {
