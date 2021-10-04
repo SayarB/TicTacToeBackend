@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
           io.emit("set_winner", { isWin, comb, winner_turn: winner });
         }
       } else {
-        console.log("wrongTurn");
+        console.log("WrongTurn");
       }
       io.emit("update_game_state", game_state);
       console.log(
